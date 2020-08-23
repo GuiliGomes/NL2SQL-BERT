@@ -10,7 +10,7 @@ from copy import deepcopy
 from matplotlib.pylab import *
 
 import torch
-import torchvision.datasets as dsets
+# import torchvision.datasets as dsets
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -110,6 +110,7 @@ def get_loader_wikisql(data_train, data_dev, bS, shuffle_train=True, shuffle_dev
 
 
 def get_fields_1(t1, tables, no_hs_t=False, no_sql_t=False):
+    # print(tables)
     nlu1 = t1['question']
     nlu_t1 = t1['question_tok']
     tid1 = t1['table_id']
@@ -358,7 +359,8 @@ def get_g(sql_i):
 def get_g_wvi_corenlp(t):
     g_wvi_corenlp = []
     for t1 in t:
-        g_wvi_corenlp.append( t1['wvi_corenlp'] )
+        g_wvi_corenlp.append( t1.get('wvi_corenlp', []) )
+        # g_wvi_corenlp.append( t1['wvi_corenlp'] )
     return g_wvi_corenlp
 
 
@@ -1933,6 +1935,8 @@ def check_sc_sa_pairs(tb, pr_sc, pr_sa, ):
     agg_ops = ['', 'MAX', 'MIN', 'COUNT', 'SUM', 'AVG']
 
     """
+    print('ˆˆˆˆˆˆˆˆˆˆˆ')
+    print(tb)
     bS = len(pr_sc)
     check = [False] * bS
     for b, pr_sc1 in enumerate(pr_sc):
@@ -2054,7 +2058,8 @@ def generate_sql_q1(sql_i1, tb1):
                 sql_query_part2 += ' AND'
                 # sql_plus_query_part2 += ' AND'
 
-            sql_query_part2 += f" {where_header} {where_op} {where_str}"
+            sql_query_part2 += f" {where_header} {where_op} '{where_str}'"
+            # sql_query_part2 += f" {where_header} {where_op} {where_str}"
 
     sql_query = sql_query_part1 + sql_query_part2
     # sql_plus_query = sql_plus_query_part1 + sql_plus_query_part2

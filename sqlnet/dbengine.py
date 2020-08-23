@@ -27,6 +27,7 @@ class DBEngine:
         if not table_id.startswith('table'):
             table_id = 'table_{}'.format(table_id.replace('-', '_'))
         table_info = self.db.query('SELECT sql from sqlite_master WHERE tbl_name = :name', name=table_id).all()[0].sql.replace('\n','')
+        # print(table_info)
         schema_str = schema_re.findall(table_info)[0]
         schema = {}
         for tup in schema_str.split(', '):

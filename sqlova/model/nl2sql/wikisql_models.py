@@ -110,6 +110,8 @@ class Seq2SQL_v1(nn.Module):
         """
         Execution-guided beam decoding.
         """
+        print('DEBUG')
+        print(knowledge)
         # s_sc = [batch_size, header_len]
         s_sc = self.scp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, show_p_sc=show_p_sc,
                         knowledge=knowledge, knowledge_header=knowledge_header)
@@ -183,6 +185,10 @@ class Seq2SQL_v1(nn.Module):
         # Now pr_sc, pr_sa are properly predicted.
         pr_sc_best = list(pr_sc)
         pr_sa_best = list(pr_sa)
+        print('PRREED')
+        print(pr_sc_best)
+        print(pr_sa_best)
+        print('PRED-------')
 
         # Now, Where-clause beam search.
         s_wn = self.wnp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, show_p_wn=show_p_wn,
@@ -268,6 +274,7 @@ class Seq2SQL_v1(nn.Module):
                 # test execution
                 # print(nlu[b])
                 # print(tb[b]['id'], tb[b]['types'], pr_sc[b], pr_sa[b], [conds11])
+                print(tb[b]['id'])
                 pr_ans = engine.execute(tb[b]['id'], pr_sc[b], pr_sa[b], [conds11])
                 if bool(pr_ans):
                     # pr_ans is not empty!

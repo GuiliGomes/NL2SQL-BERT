@@ -26,7 +26,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def construct_hyper_param(parser):
-    parser.add_argument("--do_train", default=True)
+    parser.add_argument("--do_train", default=False)
     parser.add_argument('--do_infer', default=False)
     parser.add_argument('--infer_loop', default=False)
 
@@ -240,6 +240,7 @@ def train(train_loader, train_table, model, model_bert, opt, bert_config, tokeni
         # sql_t: tokenized SQL query
         # tb   : table
         # hs_t : tokenized headers. Not used.
+        # print(train_table)
 
         g_sc, g_sa, g_wn, g_wc, g_wo, g_wv = get_g(sql_i)
         # get ground truth where-value index under CoreNLP tokenization scheme. It's done already on trainset.
@@ -332,6 +333,7 @@ def train(train_loader, train_table, model, model_bert, opt, bert_config, tokeni
         # lx stands for logical form accuracy
 
         # Execution accuracy test.
+        # print(f'GUUUIIIILIII {tb}')
         cnt_x1_list, g_ans, pr_ans = get_cnt_x_list(engine, tb, g_sc, g_sa, sql_i, pr_sc, pr_sa, pr_sql_i)
 
         # statistics
@@ -416,6 +418,10 @@ def test(data_loader, data_table, model, model_bert, bert_config, tokenizer,
          max_seq_length,
          num_target_layers, detail=False, st_pos=0, cnt_tot=1, EG=False, beam_size=4,
          path_db=None, dset_name='test'):
+    print('='*50)
+    # print(data_loader)
+    # print(data_table['1-10015132-11'])
+    # print()
     model.eval()
     model_bert.eval()
 
@@ -441,7 +447,32 @@ def test(data_loader, data_table, model, model_bert, bert_config, tokenizer,
         if cnt < st_pos:
             continue
         # Get fields
+        # nlu: array with questions
+        # nlu_t array with tokens (questions tokenized)
+        # sql_i array with meta-sql
+        # sql_q same ?
+        # sql_t array of nones? 
+        # tb batch of tables
+        # hs_t empty matrix?
+        # hds array of header tokens
         nlu, nlu_t, sql_i, sql_q, sql_t, tb, hs_t, hds = get_fields(t, data_table, no_hs_t=True, no_sql_t=True)
+        # print('%'*50)
+        # print('nlu ----')
+        # print(nlu)
+        # print('nlu_t---')
+        # print(nlu_t)
+        # print('sql_i---')
+        # print(sql_i)
+        # print('sql_q---')
+        # print(sql_q)
+        # print('sql_t---')
+        # print(sql_t)
+        # print('tb---')
+        # print(tb)
+        # print('hs_t---')
+        # print(hs_t)
+        # print('hds---')
+        # print(hds)
 
         g_sc, g_sa, g_wn, g_wc, g_wo, g_wv = get_g(sql_i)
         g_wvi_corenlp = get_g_wvi_corenlp(t)
@@ -483,6 +514,7 @@ def test(data_loader, data_table, model, model_bert, bert_config, tokenizer,
         # model specific part
         # score
         if not EG:
+            print('NOEG----------------------------')
             # No Execution guided decoding
             s_sc, s_sa, s_wn, s_wc, s_wo, s_wv = model(wemb_n, l_n, wemb_h, l_hpu, l_hs,
                                                        knowledge=knowledge,
@@ -496,7 +528,12 @@ def test(data_loader, data_table, model, model_bert, bert_config, tokenizer,
             pr_wv_str, pr_wv_str_wp = convert_pr_wvi_to_string(pr_wvi, nlu_t, nlu_tt, tt_to_t_idx, nlu)
             # g_sql_i = generate_sql_i(g_sc, g_sa, g_wn, g_wc, g_wo, g_wv_str, nlu)
             pr_sql_i = generate_sql_i(pr_sc, pr_sa, pr_wn, pr_wc, pr_wo, pr_wv_str, nlu)
+            # print('WHERE')
+            # print(pr_wc)
+            # print(pr_wo)
+            # print(pr_wv_str)
         else:
+            print('EG----------------------------')
             # Execution guided decoding
             prob_sca, prob_w, prob_wn_w, pr_sc, pr_sa, pr_wn, pr_sql_i = model.beam_forward(wemb_n, l_n, wemb_h, l_hpu,
                                                                                             l_hs, engine, tb,
@@ -507,6 +544,10 @@ def test(data_loader, data_table, model, model_bert, bert_config, tokenizer,
                                                        knowledge_header=knowledge_header)
             # sort and generate
             pr_wc, pr_wo, pr_wv, pr_sql_i = sort_and_generate_pr_w(pr_sql_i)
+            print('WHERE')
+            print(pr_wc)
+            print(pr_wo)
+            print(pr_wv)
 
             # Follosing variables are just for the consistency with no-EG case.
             pr_wvi = None  # not used
@@ -516,6 +557,10 @@ def test(data_loader, data_table, model, model_bert, bert_config, tokenizer,
 
         g_sql_q = generate_sql_q(sql_i, tb)
         pr_sql_q = generate_sql_q(pr_sql_i, tb)
+        print('--------GOLD SQL-----------------')
+        print(g_sql_q)
+        print('--------PRED SQL------------------')
+        print(pr_sql_q)
 
         # Saving for the official evaluation later.
         for b, pr_sql_i1 in enumerate(pr_sql_i):
@@ -611,6 +656,9 @@ def infer(nlu1,
     nlu = [nlu1]
     # nlu_t1 = tokenize_corenlp(client, nlu1)
     nlu_t1 = tokenize_corenlp_direct_version(client, nlu1)
+    # nlu_t1 = ['which', 'club', 'was', 'in', 'toronto', '2003-06']
+    # nlu_t1 = ["which","club","was","in","toronto","2003-06"]
+    print(nlu_t1)
     nlu_t = [nlu_t1]
 
     tb1 = data_table[0]
@@ -623,12 +671,44 @@ def infer(nlu1,
     nlu_tt, t_to_tt_idx, tt_to_t_idx \
         = get_wemb_bert(bert_config, model_bert, tokenizer, nlu_t, hds, max_seq_length,
                         num_out_layers_n=num_target_layers, num_out_layers_h=num_target_layers)
+    print('Question ' + '-'*50)
+    # print(wemb_n)
+    print(wemb_n.shape)
+    print(l_n)
+    print('Header ' + '-'*50)
+    # print(wemb_h)
+    print(wemb_h.shape)
+    print(l_hpu)
+    print(len(l_hpu))
+    print(l_hs)
+    print('Table ' + '-'*50)
+    print(tb)
+    print('---')
+    print(nlu_t)
+    print(nlu_tt)
+    print(t_to_tt_idx)
+    print(tt_to_t_idx)
+    print(nlu)
+    print(beam_size)
+    print('-'*50)
 
-    prob_sca, prob_w, prob_wn_w, pr_sc, pr_sa, pr_wn, pr_sql_i = model.beam_forward(wemb_n, l_n, wemb_h, l_hpu,
-                                                                                    l_hs, engine, tb,
-                                                                                    nlu_t, nlu_tt,
-                                                                                    tt_to_t_idx, nlu,
-                                                                                    beam_size=beam_size)
+    knowledge = [max(l_n) * [3]]
+    knowledge_header = [max(l_hs) * [2]]
+
+    # prob_sca, prob_w, prob_wn_w, pr_sc, pr_sa, pr_wn, pr_sql_i = model.beam_forward(wemb_n, l_n, wemb_h, l_hpu,
+    #                                                                                 l_hs, engine, tb,
+    #                                                                                 nlu_t, nlu_tt,
+    #                                                                                 tt_to_t_idx, nlu,
+    #                                                                                 beam_size=beam_size,
+    #                                                                                 knowledge=knowledge,
+    #                                                                                 knowledge_header=knowledge_header)
+    s_sc, s_sa, s_wn, s_wc, s_wo, s_wv = model(wemb_n, l_n, wemb_h, l_hpu, l_hs,
+                                                       knowledge=knowledge,
+                                                       knowledge_header=knowledge_header)
+    pr_sc, pr_sa, pr_wn, pr_wc, pr_wo, pr_wvi = pred_sw_se(s_sc, s_sa, s_wn, s_wc, s_wo, s_wv, )
+    pr_wv_str, pr_wv_str_wp = convert_pr_wvi_to_string(pr_wvi, nlu_t, nlu_tt, tt_to_t_idx, nlu)
+    pr_sql_i = generate_sql_i(pr_sc, pr_sa, pr_wn, pr_wc, pr_wo, pr_wv_str, nlu)
+    
 
     # sort and generate
     pr_wc, pr_wo, pr_wv, pr_sql_i = sort_and_generate_pr_w(pr_sql_i)
@@ -709,6 +789,7 @@ if __name__ == '__main__':
 
     ## 5. Get optimizers
     if args.do_train:
+        print('TRAINING!!')
         opt, opt_bert = get_opt(model, model_bert, args.fine_tune)
 
         ## 6. Train
@@ -734,6 +815,7 @@ if __name__ == '__main__':
 
             # check DEV
             with torch.no_grad():
+                print('ZABALELE')
                 acc_dev, results_dev, cnt_list = test(dev_loader,
                                                       dev_table,
                                                       model,
@@ -756,7 +838,7 @@ if __name__ == '__main__':
             # save best model
             # Based on Dev Set logical accuracy lx
             acc_lx_t = acc_dev[-2]
-            if acc_lx_t > acc_lx_t_best:
+            if acc_lx_t > acc_lx_t_best or True:
                 acc_lx_t_best = acc_lx_t
                 epoch_best = epoch
                 # save best model
@@ -780,12 +862,16 @@ if __name__ == '__main__':
         import corenlp
 
         client = corenlp.CoreNLPClient(annotators='ssplit,tokenize'.split(','))
-
+        print('GUILI!!!!!')
         nlu1 = "Which company have more than 100 employees?"
+        nlu1 = "What is terrence ross' nationality?"
+        # nlu1 = "how many schools or teams had jalen rose?"
+        # nlu1 = "which club was in toronto 2003-06"
+        # nlu1 = "What is my"
         path_db = './data_and_model'
-        db_name = 'ctable'
-        data_table = load_jsonl('./data_and_model/ctable.tables.jsonl')
-        table_name = 'ftable1'
+        db_name = 'dev'
+        data_table = load_jsonl('./data_and_model/dev.tables.jsonl')
+        table_name = '1-10015132-17'
         n_Q = 100000 if args.infer_loop else 1
         for i in range(n_Q):
             if n_Q > 1:
