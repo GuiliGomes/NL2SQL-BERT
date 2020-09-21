@@ -5,6 +5,7 @@
 
 
 import os, sys, argparse, re, json
+import traceback
 
 from matplotlib.pylab import *
 import torch.nn as nn
@@ -21,6 +22,8 @@ from sqlova.utils.utils_wikisql import *
 from sqlova.utils.utils import load_jsonl
 from sqlova.model.nl2sql.wikisql_models import *
 from sqlnet.dbengine import DBEngine
+
+from output_one_entity import process
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -658,7 +661,7 @@ def infer(nlu1,
     nlu_t1 = tokenize_corenlp_direct_version(client, nlu1)
     # nlu_t1 = ['which', 'club', 'was', 'in', 'toronto', '2003-06']
     # nlu_t1 = ["which","club","was","in","toronto","2003-06"]
-    print(nlu_t1)
+    # print(nlu_t1)
     nlu_t = [nlu_t1]
 
     tb1 = data_table[0]
@@ -671,29 +674,51 @@ def infer(nlu1,
     nlu_tt, t_to_tt_idx, tt_to_t_idx \
         = get_wemb_bert(bert_config, model_bert, tokenizer, nlu_t, hds, max_seq_length,
                         num_out_layers_n=num_target_layers, num_out_layers_h=num_target_layers)
-    print('Question ' + '-'*50)
-    # print(wemb_n)
-    print(wemb_n.shape)
-    print(l_n)
-    print('Header ' + '-'*50)
-    # print(wemb_h)
-    print(wemb_h.shape)
-    print(l_hpu)
-    print(len(l_hpu))
-    print(l_hs)
-    print('Table ' + '-'*50)
-    print(tb)
-    print('---')
-    print(nlu_t)
-    print(nlu_tt)
-    print(t_to_tt_idx)
-    print(tt_to_t_idx)
-    print(nlu)
-    print(beam_size)
-    print('-'*50)
+    # print('Question ' + '-'*50)
+    # # print(wemb_n)
+    # print(wemb_n.shape)
+    # print(l_n)
+    # print('Header ' + '-'*50)
+    # # print(wemb_h)
+    # print(wemb_h.shape)
+    # print(l_hpu)
+    # print(len(l_hpu))
+    # print(l_hs)
+    # print('Table ' + '-'*50)
+    # print(tb)
+    # print('---')
+    # print(nlu_t)
+    # print(nlu_tt)
+    # print(t_to_tt_idx)
+    # print(tt_to_t_idx)
+    # print(nlu)
+    # print(beam_size)
+    # print('-'*50)
 
-    knowledge = [max(l_n) * [3]]
-    knowledge_header = [max(l_hs) * [2]]
+    # print('Guili ------------------------------------')
+    one_data = {
+        "question_tok": nlu_t1,
+        "table_id": "employee"
+    }
+    table = {}
+    with open('data_and_model/dev.tables.jsonl', mode="r", encoding="utf-8") as f:
+        for line in f:
+            t1 = json.loads(line.strip())
+            table[t1['id']] = t1
+
+    # print(process(one_data, table))
+    knowledge, knowledge_header = process(one_data, table)
+
+
+    # knowledge = [max(l_n) * [0]]
+    # knowledge_header = [max(l_hs) * [0]]
+    # knowledge = [max(l_n) * [3]]
+    # knowledge_header = [max(l_hs) * [2]]
+
+    # knowledge = [[0, 0, 4, 0, 3, 0, 0, 0, 0, 4, 0, 1, 2, 3, 0]]
+    # knowledge_header = [[0, 0, 0, 2, 0, 2, 0, 0]]
+    # knowledge = [[0, 0, 4, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0]]
+    # knowledge_header = [[0, 0, 0, 1, 0, 1, 0, 0]]
 
     # prob_sca, prob_w, prob_wn_w, pr_sc, pr_sa, pr_wn, pr_sql_i = model.beam_forward(wemb_n, l_n, wemb_h, l_hpu,
     #                                                                                 l_hs, engine, tb,
@@ -717,16 +742,22 @@ def infer(nlu1,
     pr_sql_q1 = generate_sql_q(pr_sql_i, [tb1])
     pr_sql_q = [pr_sql_q1]
 
+    # print(f'Query: {pr_sql_q1}')
+
     try:
         pr_ans, _ = engine.execute_return_query(tb[0]['id'], pr_sc[0], pr_sa[0], pr_sql_i[0]['conds'])
     except:
+        print(traceback.format_exc())
         pr_ans = ['Answer not found.']
         pr_sql_q = ['Answer not found.']
 
     if show_answer_only:
-        print(f'Q: {nlu[0]}')
-        print(f'A: {pr_ans[0]}')
-        print(f'SQL: {pr_sql_q}')
+        # print('-'*50)
+        # print(f'Q: {nlu[0]}')
+        # print(f'SQL: {pr_sql_q}')
+        print(f'SQL: {pr_sql_q[0][0]}')
+        # print(f'A: {pr_ans[0]}')
+        print('-'*50)
 
     else:
         print(f'START ============================================================= ')
@@ -862,7 +893,6 @@ if __name__ == '__main__':
         import corenlp
 
         client = corenlp.CoreNLPClient(annotators='ssplit,tokenize'.split(','))
-        print('GUILI!!!!!')
         nlu1 = "Which company have more than 100 employees?"
         nlu1 = "What is terrence ross' nationality?"
         # nlu1 = "how many schools or teams had jalen rose?"
@@ -881,5 +911,5 @@ if __name__ == '__main__':
                 table_name, data_table, path_db, db_name,
                 model, model_bert, bert_config, max_seq_length=args.max_seq_length,
                 num_target_layers=args.num_target_layers,
-                beam_size=1, show_table=False, show_answer_only=False
+                beam_size=1, show_table=False, show_answer_only=True
             )
