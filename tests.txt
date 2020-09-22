@@ -1,0 +1,69 @@
+who works as reporter ? e
+who has a positon of eletric engineer ?
+who holds a position of training facilitator ? e
+
+who works with the position of dish washer and with salary bigger than 100 ?
+who works as dish washer and with salary bigger than 150 ?
+who has a position of truck driver and with salary bigger than 80 ?
+
+who has salary bigger than 150 dollars and has the position of supplier relationship manager ?
+who has salary bigger than 340 dollars and holds the position of account spacialist ?
+who has salary bigger than 270 dollars and work as lawyer ?
+who has salary greater than 480 dollars and work as nurse ?
+
+what employees have salary bigger than 700 dollars and work as regional finance partner ?
+what employees have salary bigger than 200 dollars and have the position of hr partner ?
+who has salary bigger than 120 dollars and work as reporter ?
+
+what is the name of the barista with salary bigger than 500 ?
+what is the name of the doctor with salary grater than 510 ?
+
+how many local store supervisor positions are there in miami ?
+how many doctor positions are there in frankfurt location? e
+how many sailor positions are there in the location of porto alegre ?
+how many positions of skater are there in the location of cachoeirinha ?
+
+
+how many positions of secretary are there in the location of new york city ?
+how many positions of collections specialist are there in the location of cape may with salary higher than 650  ?
+how many positions of eletric engineer are there in the location of boston with salary higher than 400  ?
+
+what is the average salary of a cashier position ?
+what is the salary of a position of eletric engineer ?
+what is the salary of sales representative position ? e
+what is the average salary of a regional finance partner ?
+what is the salary of a eletric engineer in the location of san francisco ?
+what is the salary of a dish washer in the san diego location ?
+what is the salary of a postion of cardiologist ? e
+what is the salary of a position of chief human resource officer in the location of san francisco ?
+what is the salary of a truck driver position in the location of frankfurt ?
+what is the average salary of a surfer position in east bay location?
+what is the average salary of a surfer position in the location of east bay ?
+
+what is the age of most senior employee ?
+what is the age of the oldest employee ?
+
+
+what is the average age of a position of local store supervisor ?
+what is the average age of a position of kite surfer ? e
+
+
+what is the average age of a cashier position in the location of berlin ?
+what is the average age of a truck driver position in the location of cape may ?
+what is the average age of a truck driver position in the of cape may location ? e
+
+
+what is the position of rob machado ?
+what is the salary of geraldine ?
+what is the age of Paul Doe employee ?
+when was the last promotion of larry ?
+when was the last promotion of larry boyer employee?
+
+when was the last promotion of bianka ?
+when was the last promotion of jose justo employee ?
+when was the last promotion of employee steve wonder ?
+
+when is the next payment for the employee frank stallone ?
+when is the next payment for katherine king employee ?
+when will be the next payment date for patrick ?
+when will the next payment date be for jose silva ?
